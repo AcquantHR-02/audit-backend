@@ -2,18 +2,15 @@ package com.AcquantHR.AuditManagementSystem.Config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -26,6 +23,10 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CustomUserDetailsService userDetailsService;
 
+    // =========================================================
+    // CONSTRUCTOR
+    // =========================================================
+
     public SecurityConfig(
             JwtAuthenticationFilter jwtAuthenticationFilter,
             CustomUserDetailsService userDetailsService) {
@@ -34,9 +35,8 @@ public class SecurityConfig {
         this.userDetailsService = userDetailsService;
     }
 
-
     // =========================================================
-    // 1. PASSWORD ENCODER
+    // PASSWORD ENCODER
     // =========================================================
 
     @Bean
@@ -45,9 +45,8 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-
     // =========================================================
-    // 2. AUTHENTICATION PROVIDER
+    // AUTHENTICATION PROVIDER
     // =========================================================
 
     @Bean
@@ -56,14 +55,15 @@ public class SecurityConfig {
         DaoAuthenticationProvider provider =
                 new DaoAuthenticationProvider(userDetailsService);
 
-        provider.setPasswordEncoder(passwordEncoder());
+        provider.setPasswordEncoder(
+                passwordEncoder()
+        );
 
         return provider;
     }
 
-
     // =========================================================
-    // 3. AUTHENTICATION MANAGER
+    // AUTHENTICATION MANAGER
     // =========================================================
 
     @Bean
@@ -74,9 +74,8 @@ public class SecurityConfig {
         return configuration.getAuthenticationManager();
     }
 
-
     // =========================================================
-    // 4. SECURITY FILTER CHAIN
+    // SECURITY FILTER CHAIN
     // =========================================================
 
     @Bean
@@ -92,49 +91,123 @@ public class SecurityConfig {
 
                 .cors(cors -> {})
 
-
                 // -------------------------------------------------
                 // CSRF
+                // JWT based API ke liye disable
                 // -------------------------------------------------
 
                 .csrf(csrf -> csrf.disable())
 
-
                 // -------------------------------------------------
-                // AUTHORIZATION
+                // AUTHORIZATION RULES
                 // -------------------------------------------------
 
                 .authorizeHttpRequests(auth -> auth
 
-                        // =========================================
-                        // PUBLIC APIs
-                        // =========================================
+                        // =================================================
+                        // AUTHENTICATION
+                        // Login & Register public hain
+                        // =================================================
 
-                        // Login / Register
                         .requestMatchers("/api/auth/**")
                         .permitAll()
 
 
-                        // =========================================
-                        // ADMIN ONLY
-                        // =========================================
+                        // =================================================
+                        // USERS
+                        // Sirf ADMIN
+                        // =================================================
 
                         .requestMatchers("/api/users/**")
                         .hasRole("ADMIN")
+
+
+                        // =================================================
+                        // ROLES
+                        // Sirf ADMIN
+                        // =================================================
 
                         .requestMatchers("/api/roles/**")
                         .hasRole("ADMIN")
 
 
-                        // =========================================
-                        // ADMIN + AUDITOR
-                        // =========================================
+                        // =================================================
+                        // AUDITS - GET
+                        //
+                        // ADMIN:
+                        // Full access
+                        //
+                        // AUDITOR:
+                        // View
+                        //
+                        // COMPLIANCE_OFFICER:
+                        // View
+                        // =================================================
 
-                        .requestMatchers("/api/audits/**")
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/audits/**"
+                        )
+                        .hasAnyRole(
+                                "ADMIN",
+                                "AUDITOR",
+                                "COMPLIANCE_OFFICER"
+                        )
+
+
+                        // =================================================
+                        // AUDITS - CREATE
+                        //
+                        // ADMIN + AUDITOR
+                        // =================================================
+
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/audits/**"
+                        )
                         .hasAnyRole(
                                 "ADMIN",
                                 "AUDITOR"
                         )
+
+
+                        // =================================================
+                        // AUDITS - UPDATE
+                        //
+                        // ADMIN + AUDITOR
+                        // =================================================
+
+                        .requestMatchers(
+                                HttpMethod.PUT,
+                                "/api/audits/**"
+                        )
+                        .hasAnyRole(
+                                "ADMIN",
+                                "AUDITOR"
+                        )
+
+
+                        // =================================================
+                        // AUDITS - DELETE
+                        //
+                        // ADMIN + AUDITOR
+                        // =================================================
+
+                        .requestMatchers(
+                                HttpMethod.DELETE,
+                                "/api/audits/**"
+                        )
+                        .hasAnyRole(
+                                "ADMIN",
+                                "AUDITOR"
+                        )
+
+
+                        // =================================================
+                        // FINDINGS
+                        //
+                        // ADMIN + AUDITOR
+                        // =================================================
 
                         .requestMatchers("/api/findings/**")
                         .hasAnyRole(
@@ -143,9 +216,11 @@ public class SecurityConfig {
                         )
 
 
-                        // =========================================
-                        // ADMIN + COMPLIANCE OFFICER
-                        // =========================================
+                        // =================================================
+                        // COMPLIANCE
+                        //
+                        // ADMIN + COMPLIANCE_OFFICER
+                        // =================================================
 
                         .requestMatchers("/api/compliance/**")
                         .hasAnyRole(
@@ -154,16 +229,18 @@ public class SecurityConfig {
                         )
 
 
-                        // =========================================
-                        // ALL OTHER APIs
-                        // =========================================
+                        // =================================================
+                        // ANY OTHER API
+                        //
+                        // Authentication required
+                        // =================================================
 
                         .anyRequest()
                         .authenticated()
                 )
 
-
                 // -------------------------------------------------
+                // SESSION MANAGEMENT
                 // JWT = STATELESS
                 // -------------------------------------------------
 
@@ -173,7 +250,6 @@ public class SecurityConfig {
                         )
                 )
 
-
                 // -------------------------------------------------
                 // AUTHENTICATION PROVIDER
                 // -------------------------------------------------
@@ -182,16 +258,16 @@ public class SecurityConfig {
                         authenticationProvider()
                 )
 
-
                 // -------------------------------------------------
                 // JWT FILTER
+                // UsernamePasswordAuthenticationFilter
+                // se pehle JWT filter chalega
                 // -------------------------------------------------
 
                 .addFilterBefore(
                         jwtAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class
                 );
-
 
         return http.build();
     }
