@@ -3,7 +3,6 @@ package com.AcquantHR.AuditManagementSystem.Service;
 import java.util.List;
 
 import com.AcquantHR.AuditManagementSystem.Entity.Audit;
-
 public interface AuditService {
 
     Audit createAudit(Audit audit);
@@ -17,8 +16,8 @@ public interface AuditService {
     void deleteAudit(Long id);
 
     List<Audit> getAuditsByStatus(String status);
-    
+
     Audit assignAuditor(Long auditId, Long auditorId);
-    
+
     List<Audit> getAuditsByAuditor(Long auditorId);
 }

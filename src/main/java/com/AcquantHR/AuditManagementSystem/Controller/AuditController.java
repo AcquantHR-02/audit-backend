@@ -24,7 +24,11 @@ public class AuditController {
     public AuditController(AuditService auditService) {
         this.auditService = auditService;
     }
-    
+
+    // =========================
+    // GET AUDITS BY AUDITOR
+    // =========================
+
     @GetMapping("/auditor/{auditorId}")
     public ResponseEntity<List<Audit>> getAuditsByAuditor(
             @PathVariable Long auditorId) {
@@ -34,7 +38,10 @@ public class AuditController {
         );
     }
 
-    // Create Audit
+    // =========================
+    // CREATE AUDIT
+    // =========================
+
     @PostMapping
     public ResponseEntity<Audit> createAudit(
             @RequestBody Audit audit) {
@@ -44,7 +51,10 @@ public class AuditController {
         );
     }
 
-    // Get Audit By ID
+    // =========================
+    // GET AUDIT BY ID
+    // =========================
+
     @GetMapping("/{id}")
     public ResponseEntity<Audit> getAuditById(
             @PathVariable Long id) {
@@ -54,7 +64,10 @@ public class AuditController {
         );
     }
 
-    // Get All Audits
+    // =========================
+    // GET AUDITS
+    // =========================
+
     @GetMapping
     public ResponseEntity<List<Audit>> getAllAudits() {
 
@@ -63,7 +76,10 @@ public class AuditController {
         );
     }
 
-    // Update Audit
+    // =========================
+    // UPDATE AUDIT
+    // =========================
+
     @PutMapping("/{id}")
     public ResponseEntity<Audit> updateAudit(
             @PathVariable Long id,
@@ -74,7 +90,10 @@ public class AuditController {
         );
     }
 
-    // Delete Audit
+    // =========================
+    // DELETE AUDIT
+    // =========================
+
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteAudit(
             @PathVariable Long id) {
@@ -86,7 +105,10 @@ public class AuditController {
         );
     }
 
-    // Get Audits By Status
+    // =========================
+    // GET AUDITS BY STATUS
+    // =========================
+
     @GetMapping("/status/{status}")
     public ResponseEntity<List<Audit>> getAuditsByStatus(
             @PathVariable String status) {
@@ -96,7 +118,10 @@ public class AuditController {
         );
     }
 
-    // Assign Auditor
+    // =========================
+    // ASSIGN AUDITOR
+    // =========================
+
     @PutMapping("/{auditId}/assign/{auditorId}")
     public ResponseEntity<Audit> assignAuditor(
             @PathVariable Long auditId,
@@ -109,6 +134,4 @@ public class AuditController {
                 )
         );
     }
-    
-    
 }
